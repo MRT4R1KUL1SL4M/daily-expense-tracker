@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>প্রিমিয়াম এক্সপেন্স ট্র্যাকার</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Professional font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9fafb; /* Very light, clean gray */
+            color: #111827;
+        }
+        
+        /* Minimalist scrollbar */
+        .history-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .history-scroll::-webkit-scrollbar-track {
+            background: transparent; 
+        }
+        .history-scroll::-webkit-scrollbar-thumb {
+            background: #e5e7eb; 
+            border-radius: 4px;
+        }
+        .history-scroll::-webkit-scrollbar-thumb:hover {
+            background: #d1d5db; 
+        }
+
+        /* Clean inputs */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+            opacity: 0.6;
+        }
+        input[type="date"]::-webkit-calendar-picker-indicator:hover {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center py-10 px-4">
+
+    <!-- Premium Clean Card -->
+    <div class="bg-white rounded-[2rem] shadow-sm border border-gray-100 w-full max-w-md overflow-hidden">
+        
+        <!-- Dashboard Header (Minimalist) -->
+        <div class="px-8 pt-10 pb-6 text-center border-b border-gray-50">
+            <p class="text-sm font-medium text-gray-500 mb-2">আজকের ব্যালেন্স</p>
+            <h1 class="text-5xl font-bold tracking-tight text-gray-900 mb-8" id="balance">৳ ০.০০</h1>
+            
+            <div class="flex justify-between items-center bg-gray-50 rounded-2xl p-4 border border-gray-100">
+                <div class="w-1/2 text-left pl-2">
+                    <div class="flex items-center gap-1.5 text-gray-500 text-xs font-semibold uppercase tracking-wider mb-1">
+                        <div class="w-2 h-2 rounded-full bg-emerald-500"></div> আয়
+                    </div>
+                    <div class="text-lg font-bold text-gray-900" id="income">৳ ০.০০</div>
+                </div>
+                <div class="w-px h-10 bg-gray-200"></div>
+                <div class="w-1/2 text-right pr-2">
+                    <div class="flex items-center justify-end gap-1.5 text-gray-500 text-xs font-semibold uppercase tracking-wider mb-1">
+                        ব্যয় <div class="w-2 h-2 rounded-full bg-rose-500"></div>
+                    </div>
+                    <div class="text-lg font-bold text-gray-900" id="expense">৳ ০.০০</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-8">
+            <!-- Add Transaction Form -->
+            <form id="form" class="mb-8 space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="col-span-2">
+                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">বিবরণ</label>
+                        <input type="text" id="text" placeholder="যেমন: বাজার, বেতন..." class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:bg-white transition-all text-sm font-medium" required autocomplete="off">
+                    </div>
+                    
+                    <div class="col-span-2 sm:col-span-1">
+                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">পরিমাণ (৳)</label>
+                        <input type="number" id="amount" placeholder="0.00" class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:bg-white transition-all text-sm font-medium" required min="1">
+                    </div>
+
+                    <div class="col-span-2 sm:col-span-1">
+                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">ধরন</label>
+                        <select id="type" class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:bg-white transition-all text-sm font-medium appearance-none">
+                            <option value="expense">ব্যয় (Expense)</option>
+                            <option value="income">আয় (Income)</option>
+                        </select>
+                    </div>
+
+                    <div class="col-span-2">
+                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">তারিখ</label>
+                        <input type="date" id="date" class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:bg-white transition-all text-sm font-medium text-gray-700" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-gray-900 hover:bg-black text-white font-medium py-3.5 rounded-xl transition-colors mt-2 text-sm flex items-center justify-center gap-2">
+                    যোগ করুন
+                </button>
+            </form>
+
+            <!-- Transaction History (Grouped by Date) -->
+            <div class="flex justify-between items-center mb-5 px-1 mt-6">
+                <h3 class="text-xs font-extrabold text-gray-400 uppercase tracking-widest">লেনদেনের ইতিহাস</h3>
+            </div>
+            
+            <div id="list-container" class="history-scroll max-h-80 overflow-y-auto pr-2 pb-4 space-y-6">
+                <!-- Data will be injected here -->
+                <div id="empty-state" class="text-center py-10 hidden">
+                    <div class="w-16 h-16 bg-gray-50 border border-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-300 shadow-sm">
+                        <i class="ph ph-receipt text-2xl"></i>
+                    </div>
+                    <p class="text-sm text-gray-500 font-medium">কোনো লেনদেন পাওয়া যায়নি</p>
+                    <p class="text-xs text-gray-400 mt-1">আপনার প্রথম হিসাবটি উপরে যোগ করুন</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script -->
+    <script>
+        const balance = document.getElementById('balance');
+        const income = document.getElementById('income');
+        const expense = document.getElementById('expense');
+        const listContainer = document.getElementById('list-container');
+        const form = document.getElementById('form');
+        const text = document.getElementById('text');
+        const amount = document.getElementById('amount');
+        const type = document.getElementById('type');
+        const dateInput = document.getElementById('date');
+        const emptyState = document.getElementById('empty-state');
+
+        // Set default date to today
+        const today = new Date().toISOString().split('T')[0];
+        dateInput.value = today;
+
+        let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+
+        function formatMoney(number) {
+            return new Intl.NumberFormat('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(number);
+        }
+
+        function getDisplayDate(dateString) {
+            const dateObj = new Date(dateString);
+            const todayObj = new Date();
+            const yesterdayObj = new Date(todayObj);
+            yesterdayObj.setDate(yesterdayObj.getDate() - 1);
+
+            if (dateString === todayObj.toISOString().split('T')[0]) {
+                return 'আজ (Today)';
+            } else if (dateString === yesterdayObj.toISOString().split('T')[0]) {
+                return 'গতকাল (Yesterday)';
+            } else {
+                return dateObj.toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' });
+            }
+        }
+
+        function addTransaction(e) {
+            e.preventDefault();
+
+            if (text.value.trim() === '' || amount.value.trim() === '' || dateInput.value === '') {
+                alert("সবগুলো তথ্য সঠিকভাবে পূরণ করুন।");
+                return;
+            }
+
+            const transactionAmount = type.value === 'expense' ? -Math.abs(amount.value) : Math.abs(amount.value);
+
+            const transaction = {
+                id: Math.floor(Math.random() * 100000000),
+                text: text.value,
+                amount: transactionAmount,
+                date: dateInput.value // Stored as YYYY-MM-DD
+            };
+
+            transactions.push(transaction);
+            updateLocalStorage();
+            
+            // Reset form
+            text.value = '';
+            amount.value = '';
+            dateInput.value = today;
+            
+            init();
+        }
+
+        function renderTransactions() {
+            // Remove existing lists
+            const existingGroups = listContainer.querySelectorAll('.date-group');
+            existingGroups.forEach(el => el.remove());
+
+            if (transactions.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            } else {
+                emptyState.classList.add('hidden');
+            }
+
+            // Sort transactions by date (newest first)
+            transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            // Group by date
+            const grouped = transactions.reduce((acc, curr) => {
+                if (!acc[curr.date]) acc[curr.date] = [];
+                acc[curr.date].push(curr);
+                return acc;
+            }, {});
+
+            // Render groups
+            for (const [date, items] of Object.entries(grouped)) {
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'date-group';
+
+                // Premium Date Header with line separator
+                const dateHeaderDiv = document.createElement('div');
+                dateHeaderDiv.className = 'flex items-center gap-3 mb-3 pl-1';
+                dateHeaderDiv.innerHTML = `
+                    <h4 class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">${getDisplayDate(date)}</h4>
+                    <div class="h-px bg-gray-100 flex-1 mt-0.5"></div>
+                `;
+                groupDiv.appendChild(dateHeaderDiv);
+
+                // Items list container (Unified Premium Card Style)
+                const ul = document.createElement('ul');
+                ul.className = 'bg-white border border-gray-100 rounded-[1.5rem] shadow-sm overflow-hidden';
+
+                items.forEach(transaction => {
+                    const isIncome = transaction.amount > 0;
+                    const sign = isIncome ? '+' : '-';
+                    const amountColor = isIncome ? 'text-emerald-600' : 'text-gray-900';
+                    const iconBg = isIncome ? 'bg-emerald-50 text-emerald-500' : 'bg-gray-50 text-gray-500';
+                    const iconType = isIncome ? 'ph-arrow-down-left' : 'ph-credit-card'; // Changed expense icon for a more premium look
+
+                    const li = document.createElement('li');
+                    // Sleek list item with absolute positioned delete button
+                    li.className = 'flex justify-between items-center p-4 border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors group relative overflow-hidden';
+                    
+                    li.innerHTML = `
+                        <div class="flex items-center gap-4 z-10">
+                            <div class="w-11 h-11 rounded-full flex items-center justify-center ${iconBg}">
+                                <i class="ph ${iconType} text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-[15px] font-semibold text-gray-900 leading-tight">${transaction.text}</p>
+                                <p class="text-xs font-medium text-gray-400 mt-1">${isIncome ? 'আয়' : 'ব্যয়'}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center z-10">
+                            <!-- Amount slides left on hover -->
+                            <div class="text-right transition-transform duration-300 group-hover:-translate-x-12">
+                                <span class="font-bold text-[15px] ${amountColor}">
+                                    ${sign}৳ ${formatMoney(Math.abs(transaction.amount))}
+                                </span>
+                            </div>
+                            <!-- Delete Button slides in from right on hover -->
+                            <button onclick="removeTransaction(${transaction.id})" class="absolute right-4 w-9 h-9 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-8 group-hover:translate-x-0 focus:outline-none">
+                                <i class="ph-fill ph-trash text-lg"></i>
+                            </button>
+                        </div>
+                    `;
+                    ul.appendChild(li);
+                });
+
+                groupDiv.appendChild(ul);
+                listContainer.appendChild(groupDiv);
+            }
+        }
+
+        function updateValues() {
+            // Ajker date ber kora hocche (YYYY-MM-DD format)
+            const todayString = new Date().toISOString().split('T')[0];
+            
+            // Shudhu ajker transaction gulo filter kore neya hocche
+            const todaysTransactions = transactions.filter(transaction => transaction.date === todayString);
+
+            // Ekhon shudhu ajker data theke amount calculate hobe
+            const amounts = todaysTransactions.map(transaction => transaction.amount);
+            const total = amounts.reduce((acc, item) => (acc += item), 0);
+            const incomeTotal = amounts.filter(item => item > 0).reduce((acc, item) => (acc += item), 0);
+            const expenseTotal = amounts.filter(item => item < 0).reduce((acc, item) => (acc += item), 0) * -1;
+
+            balance.innerText = `৳ ${formatMoney(total)}`;
+            income.innerText = `৳ ${formatMoney(incomeTotal)}`;
+            expense.innerText = `৳ ${formatMoney(expenseTotal)}`;
+        }
+
+        window.removeTransaction = function(id) {
+            transactions = transactions.filter(transaction => transaction.id !== id);
+            updateLocalStorage();
+            init();
+        }
+
+        function updateLocalStorage() {
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+        }
+
+        function init() {
+            renderTransactions();
+            updateValues();
+        }
+
+        // Initialize App
+        init();
+        form.addEventListener('submit', addTransaction);
+    </script>
+</body>
+</html>
